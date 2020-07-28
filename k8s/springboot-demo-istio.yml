@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+  labels:
+    app: springboot-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: springboot-deployment
+  template:
+    metadata:
+      labels:
+        app: springboot-deployment
+    spec:
+      serviceAccountName: springboot-demo
+      containers:
+      - name: springboot-demo
+        image: jaswanth1234/service-app:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: LOG_DIR
+          value: "/tmp/logs"
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: wlp-output
+          mountPath: /opt/ibm/wlp/output
+      volumes:
+      - name: wlp-output
+        emptyDir: {}
+      - name: tmp
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-svc
+  labels:
+    app: springboot-svc
+    service: springboot-svc
+spec:
+  ports:
+  - port: 8080
+    name: http
+  selector:
+    app: springboot-deployment
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: springboot-demo
+  labels:
+    account: springboot-svc
+
